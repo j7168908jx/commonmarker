@@ -313,6 +313,10 @@ static cmark_node *finalize(cmark_parser *parser, cmark_node *b) {
     }
     break;
   }
+  case CMARK_NODE_MATH_BLOCK:
+    b->as.code.literal = cmark_chunk_buf_detach(node_content);
+    b->as.code.info = cmark_chunk_literal("math");
+    break;
 
   case CMARK_NODE_CODE_BLOCK:
     if (!b->as.code.fenced) { // indented code

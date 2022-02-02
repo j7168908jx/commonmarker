@@ -28,6 +28,7 @@ static bool S_is_leaf(cmark_node *node) {
   case CMARK_NODE_HTML_BLOCK:
   case CMARK_NODE_THEMATIC_BREAK:
   case CMARK_NODE_CODE_BLOCK:
+  case CMARK_NODE_MATH_BLOCK:
   case CMARK_NODE_TEXT:
   case CMARK_NODE_SOFTBREAK:
   case CMARK_NODE_LINEBREAK:
