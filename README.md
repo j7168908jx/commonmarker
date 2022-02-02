@@ -1,4 +1,54 @@
 # CommonMarker
+## Update - Gitlab math inline rendering
+TL; DR:
+
+This is a forked version from https://github.com/gjtorikian/commonmarker
+
+Codes are modified to adapt our frequent usage of the dollar expression (as in LaTeX).
+
+Use *AT YOUR OWN RISK*.
+
+-----
+
+As for current version of GitLab (self-hosted, omnibus version 14.6.0-ee),
+the supported usage for KaTeX rendering math equations in markdown is of the following two formats:
+
+- ``$`math`$`` (dollar-backtick{1,80}-math-backtick{1,80}-dollar) will render inline math. (Starting number of backtick shall match the number of ending) (`inlines.c` line 363-382)
+- ```` ```math \n(lines of math) \n``` ```` will render display style math.  (`scanners.re` line 282-304)
+
+As heavily math using PhDs, we want to use somehow LaTeX compatible style of math rendering markdown. So this is tuned now, accepting:
+
+- ``$math$`` (dollar-math-dollar) will render inline math. (`inlines.c` line 396-432)
+- ``$$math$$`` (dollar{2,80}-math-dollar{2,80}) will render display style math. (also handled in `inlines.c` line 396-432)
+
+The original usage ``$`math`$`` is thus now rendering `` `math` ``(including the starting and ending backticks) into math expression, while the code block style is not modified.
+
+-----
+### More Details
+Details of modifications are listed below. Reference to the code is in the format:
+```
+<function|variable|expression name>[/<new name>], <filename>:<lines in original version>/<lines in updated version>
+```
+where `<lines in original>` might be `*` indicating that this is not in the original version.
+
+- `SPECIAL_CHARS, inlines.c:1286/1336` perceives dollar as a special char now. So it won't be skipped when scanning lines as if it was normal text.
+
+- Entry from `parse_inline, inlines.c:1360/1410` watch the case of scanning a dollar, indicating that the following can be a math expression. This situation is managed together with the case of scanning a backtick.
+
+- Main implementation starting at `handle_backticks/handle_backticks_or_dollars, inlines.c:363/396` now handles the case scanning a dollar too.
+  - The first `take_while, inlines.c:225/249` now scans the literal until a different string, so will match any number of `` ` `` or `` $ `` and return it. It also marks `subj->scanned_for_dollar_instead_of_backtick, inlines.c:*/58` whether dollars are matched.
+  - Next, `scan_to_closing_backticks/scan_to_closing_backticks_or_dollars, inlines.c:284/310` now match the same number of the opening backticks or dollars. It also marks `subj->just_closed_dollar_env, inlines.c:*/60` whether dollars are closed.
+  - If dollar is matched and the number of dollars == 1, handle the parsed literal as inline math. This is almost the same as handling the inline backticks.
+    - As to the currently `gitlab-rails/lib/banzai/filter/math_filter.rb` implementation, it renders inline math if the parsed html has any `code` tag with one dollar both leading and trailing, i.e., `$<code>..</code>$`. The `if clause, inlines.c:*,1428` handles this, adding dollar to the front and the end of parsed inline math as plain text.
+  - Or if we have more than one dollar, `if clause, inlines.c:*/405` handles it as a `math_block` (`make_math_block, inlines.c:*/28` -> `make_block, inlines.c:*/103`), allocating node memory and setting its code info (later rendering to html class) to `math`. (**Caution:**) This means later, a `<pre></pre>` tag will likely be inserted into a `<p></p>` tag.
+- (**Caution:**) `case CMARK_NODE_MATH_BLOCK, blocks.c:*/316` set the (Markdown tree) node info again.
+- Another (Markdown tree) node type: `CMARK_NODE_MATH_BLOCK, cmark-gfm.h:*/69` is declared for above to work.
+- `case CMARK_NODE_MATH_BLOCK, html.c:*/201`, `case CMARK_NODE_MATH_BLOCK, iterator.c:*/31` and `case CMARK_NODE_MATH_BLOCK, node.c:*/366` let the math block behave like a code block when rendering.
+
+There is no other magic inside this version. 
+
+---------
+## Original README
 
 ![Build Status](https://github.com/gjtorikian/commonmarker/workflows/CI/badge.svg) [![Gem Version](https://badge.fury.io/rb/commonmarker.svg)](http://badge.fury.io/rb/commonmarker)
 
