@@ -48,6 +48,62 @@ where `<lines in original>` might be `*` indicating that this is not in the orig
 There is no other magic inside this version. 
 
 ---------
+### Examples
+
+Here is our test case:
+``````
+Hello *world*, test this `code`
+
+**inline style:**
+
+dollar: $234$
+tick in dollar: $`123`$, $`123$, $123 `` 45$
+dollar in tick: `$234`, `$234$`
+
+dollar in ul: 
+1. 123 $ 234$
+1. 123 $234$
+1. 123 $234 $1
+
+dollar in tick in ul:
+ - `234$`
+ - `2$34$5`
+ - `2$3`
+
+**display style:**
+
+$$f(x)$$ or ```code```
+
+```code``` or $$f(x)$$
+
+```
+no
+$$f(x)$$
+```
+
+$$ use 
+multiple
+lines $$
+
+$$$
+wrong input
+$$$
+
+$$
+\left\{
+\begin{aligned}
+\frac{w^\intercal x+b}{\|w^\intercal\|} & > d^{w,b} &, y=1 \\
+\frac{w^\intercal x+b}{\|w^\intercal\|} & < -d^{w,b} &,  y=-1 \\
+\end{aligned}
+\right .
+$$
+``````
+
+The result is in this screenshot:
+
+![image](https://user-images.githubusercontent.com/29114306/152133870-857711f0-74e9-4ac5-b567-31e3e410910b.png)
+
+---------
 ## Original README
 
 ![Build Status](https://github.com/gjtorikian/commonmarker/workflows/CI/badge.svg) [![Gem Version](https://badge.fury.io/rb/commonmarker.svg)](http://badge.fury.io/rb/commonmarker)
